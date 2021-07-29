@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heaven.mapper.TypeMapper">
+    <select id="listTypes" resultType="TypeInfo">
+        select t_sort.id id,name,count(s_id) count, color
+        from t_blog right join t_sort on s_id = t_sort.id group by t_sort.id
+    </select>
+    <select id="searchTypes" resultType="TypeInfo">
+        select t_sort.id id,name,count(s_id) count , color
+        from t_blog right join t_sort on s_id = t_sort.id where name like '%${searchInfo}%' group by t_sort.id
+    </select>
+</mapper>
