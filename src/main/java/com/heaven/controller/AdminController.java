@@ -10,6 +10,13 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     @Autowired
     private AdminMapper adminMapper;
+    /**
+     * @Description: 登录验证
+     * @param: adminInfo:
+     * @Return: java.lang.Boolean
+     * @author: heaven
+     * @date: 2021/8/1 14:12
+    */
     @CrossOrigin
     @PostMapping("/api/admin/verity")
     public Boolean Verity(@RequestBody AdminInfo adminInfo){
@@ -24,6 +31,13 @@ public class AdminController {
             }
         }
     }
+    /**
+     * @Description: 密码修改
+     * @param: adminInfo:
+     * @Return: java.lang.Boolean
+     * @author: heaven
+     * @date: 2021/8/1 14:13
+    */
     @CrossOrigin
     @PostMapping("/api/admin/modify")
     public Boolean Modify(@RequestBody AdminInfo adminInfo){

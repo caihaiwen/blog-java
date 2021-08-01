@@ -1,12 +1,13 @@
 package com.heaven.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.heaven.mapper.AdminMapper;
 import com.heaven.mapper.TagMapper;
+import com.heaven.pojo.AdminInfo;
 import com.heaven.pojo.TagInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -14,16 +15,110 @@ import java.util.List;
 public class TagController {
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private AdminMapper adminMapper;
     /**
-     * @Description: TODO
-     返回用户需要的列表
+     * @Description: 查找所有的标签(不分页)
      * @Return: java.util.List<com.heaven.pojo.TagInfo>
-     * @author: Heaven
-     * @date: 2021/7/29 10:17
+     * @author: heaven
+     * @date: 2021/8/1 14:54
     */
     @CrossOrigin
-    @GetMapping("/api/admin/listTag")
+    @GetMapping("/api/admin/noPage/listTags")
     public List<TagInfo> listTag(){
         return tagMapper.selectList(null);
+    }
+    /**
+     * @Description: 查找所有的标签
+     * @param: currentPage: 当前页
+     * @param: pageSize: 当前页大小
+     * @Return: com.baomidou.mybatisplus.extension.plugins.pagination.Page
+     * @author: heaven
+     * @date: 2021/8/1 14:53
+    */
+    @CrossOrigin
+    @GetMapping("/api/admin/listTags")
+    public Page listTags(@RequestParam("currentPage") Integer currentPage,
+                                  @RequestParam("pageSize") Integer pageSize){
+        Page<TagInfo> iPage = new Page<>(currentPage,pageSize);
+        tagMapper.listTags(iPage,null);
+        return iPage;
+    }
+    /**
+     * @Description: 根据ID查找标签
+     * @param: id: 当前标签的ID
+     * @Return: com.heaven.pojo.TagInfo
+     * @author: heaven
+     * @date: 2021/8/1 14:55
+    */
+    @CrossOrigin
+    @GetMapping("/api/admin/editorTag")
+    public TagInfo editorTag(@RequestParam("id") Integer id){
+        return tagMapper.selectById(id);
+    }
+
+    /**
+     * @Description: 根据标签名称来查询标签的信息
+     * @param: searchInfo: 标签名称
+     * @Return: java.util.List<com.heaven.pojo.TagInfo>
+     * @author: heaven
+     * @date: 2021/8/1 15:03
+    */
+    @CrossOrigin
+    @GetMapping("/api/admin/searchTags")
+    public List<TagInfo> searchTags(@RequestParam("searchInfo") String searchInfo){
+        return tagMapper.searchTags(searchInfo);
+    }
+    /**
+     * @Description: 更新标签的信息
+     * @param: tagInfo: 标签信息
+     * @Return: java.lang.Boolean
+     * @author: heaven
+     * @date: 2021/8/1 15:04
+    */
+    @CrossOrigin
+    @PostMapping("/api/admin/updateTags")
+    public Boolean updateTag(@RequestBody TagInfo tagInfo){
+        AdminInfo User = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", tagInfo.getMd5Password()));
+        if ( User != null){
+            tagMapper.updateById(tagInfo);
+            return true;
+        }
+        else return false;
+    }
+    /**
+     * @Description: 添加标签
+     * @param: tagInfo: 标签信息
+     * @Return: java.lang.Boolean
+     * @author: heaven
+     * @date: 2021/8/1 15:08
+    */
+    @CrossOrigin
+    @PostMapping("/api/admin/addTags")
+    public Boolean addTags(@RequestBody TagInfo tagInfo){
+        AdminInfo User = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", tagInfo.getMd5Password()));
+        if ( User != null){
+            tagMapper.insert(tagInfo);
+            return true;
+        }
+        else
+            return false;
+    }
+    /**
+     * @Description: 根据标签Id来删除标签
+     * @param: tagInfo: 标签信息
+     * @Return: java.lang.Boolean
+     * @author: heaven
+     * @date: 2021/8/1 15:15
+    */
+    @CrossOrigin
+    @PostMapping("/api/admin/deleteTag")
+    public Boolean deleteTag(@RequestBody TagInfo tagInfo){
+        AdminInfo User = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", tagInfo.getMd5Password()));
+        if ( User != null){
+            tagMapper.deleteById(tagInfo.getId());
+            return true;
+        }
+        else return false;
     }
 }

@@ -2,5 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.heaven.mapper.TagMapper">
-    <select id="listTags" resultType="TagInfo"></select>
+    <select id="listTags" resultType="TagInfo">
+        select id,name,color,count(id) count
+        from t_blog_tag right join t_tag on t_tag.id = t_blog_tag.t_id
+        group by id
+    </select>
+    <select id="searchTags" resultType="TagInfo">
+        select id,name,color,count(id) count
+        from t_blog_tag right join t_tag on t_tag.id = t_blog_tag.t_id
+        where name like '%${searchInfo}%'
+        group by id
+    </select>
 </mapper>
