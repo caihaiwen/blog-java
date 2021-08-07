@@ -52,7 +52,7 @@ public class TagController {
      * @date: 2021/8/1 14:55
     */
     @CrossOrigin
-    @GetMapping("/api/admin/editorTag")
+    @GetMapping("/api/admin/selectOneTag")
     public TagInfo editorTag(@RequestParam("id") Integer id){
         return tagMapper.selectById(id);
     }
@@ -77,7 +77,7 @@ public class TagController {
      * @date: 2021/8/1 15:04
     */
     @CrossOrigin
-    @PostMapping("/api/admin/updateTags")
+    @PostMapping("/api/admin/updateTag")
     public Boolean updateTag(@RequestBody TagInfo tagInfo){
         AdminInfo User = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", tagInfo.getMd5Password()));
         if ( User != null){
@@ -94,7 +94,7 @@ public class TagController {
      * @date: 2021/8/1 15:08
     */
     @CrossOrigin
-    @PostMapping("/api/admin/addTags")
+    @PostMapping("/api/admin/addTag")
     public Boolean addTags(@RequestBody TagInfo tagInfo){
         AdminInfo User = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", tagInfo.getMd5Password()));
         if ( User != null){
@@ -120,5 +120,16 @@ public class TagController {
             return true;
         }
         else return false;
+    }
+    /**
+     * @Description: 获取所有的标签信息
+     * @Return: java.util.List<com.heaven.pojo.TagInfo>
+     * @author: Heaven
+     * @date: 2021/8/7 8:21
+    */
+    @CrossOrigin
+    @GetMapping("/api/listTag")
+    public List<TagInfo> listTags(){
+        return tagMapper.selectList(null);
     }
 }

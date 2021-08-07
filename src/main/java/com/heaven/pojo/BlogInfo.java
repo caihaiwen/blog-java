@@ -21,9 +21,9 @@ public class BlogInfo {
     private LocalDateTime releaseDate;   //发布时间
     private String title;   //文章标题
     private Boolean appreciate; //是否开启赞赏
-    private String fImageAddress;   //首图链接
+    private String imageAddress;   //首图链接
     @TableField(exist = false)
-    private String name;
+    private String name;    //分类名称
     private Integer views;  //浏览量
     private String content; //文章内容
     private Integer sId;    //分类ID
@@ -35,5 +35,9 @@ public class BlogInfo {
     private Boolean isTop;  //是否置顶
     private String description; //描述消息
     @TableField(exist = false)
-    private List<Integer> tags;
+    private List<Integer> tags; //标签Id
+    @TableField(exist = false)
+    private List<TagInfo> tagsName; //标签信息
+    @TableField(exist = false)
+    private String year;
 }

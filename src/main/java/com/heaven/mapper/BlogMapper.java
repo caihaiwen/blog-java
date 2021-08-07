@@ -12,4 +12,6 @@ import java.util.List;
 public interface BlogMapper extends BaseMapper<BlogInfo> {
     IPage<BlogInfo> mListBlogs(Page<?> page,Integer state);
     List<BlogInfo> searchBlog(String info,Integer searchType);
+    List<String> findYear();
+    List<BlogInfo> findBlogByYear(String year);
 }

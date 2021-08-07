@@ -135,4 +135,15 @@ public class TypeController {
         else
             return false;
     }
+    /**
+     * @Description: 获取所有的T分类信息
+     * @Return: java.util.List<com.heaven.pojo.TypeInfo>
+     * @author: Heaven
+     * @date: 2021/8/7 8:19
+    */
+    @CrossOrigin
+    @GetMapping("/api/listType")
+    public List<TypeInfo> listType(){
+        return typeMapper.selectList(null);
+    }
 }

@@ -14,4 +14,10 @@
               s_id = #{searchType} and
               title like '%${info}%'
     </select>
+    <select id="findYear" resultType="String">
+        select DATE_FORMAT(release_date,'%Y') year from t_blog group by year
+    </select>
+    <select id="findBlogByYear" resultType="BlogInfo">
+        select id,title,release_date from t_blog where DATE_FORMAT(release_date,'%Y') = #{year}
+    </select>
 </mapper>
