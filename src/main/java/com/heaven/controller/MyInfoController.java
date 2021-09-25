@@ -58,4 +58,16 @@ public class MyInfoController {
     public String getSay(){
         return myInfoMapper.selectOne(new QueryWrapper<MyInfo>().eq("id",1)).getSay();
     }
+
+    /**
+     * @Description: 获取备案号
+     * @Return: java.lang.String
+     * @author: Heaven
+     * @date: 2021/8/8 8:41
+    */
+    @CrossOrigin
+    @GetMapping("/api/cNumber")
+    public String getNumber(){
+        return myInfoMapper.selectById(1).getRecordNum();
+    }
 }

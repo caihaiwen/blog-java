@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.heaven.mapper.*;
 import com.heaven.pojo.*;
+import com.heaven.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,8 @@ public class BlogController {
     private TypeMapper typeMapper;
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private RedisUtil redisUtil;
     /**
      * @Description: 列出文章详细信息
      * @param: currentPage: //当前页
@@ -152,14 +156,14 @@ public class BlogController {
     @CrossOrigin
     @GetMapping("/api/searchAllInfo")
     public List<BlogInfo> searchSimpleBlog(){
-        return blogMapper.selectList(new QueryWrapper<BlogInfo>().select("id", "title"));
+        return blogMapper.selectList(new QueryWrapper<BlogInfo>().select("id", "title").eq("published",true));
     }
     @CrossOrigin
     @GetMapping("/api/listBlogs")
     public Page<BlogInfo> listBlog(@RequestParam("currentPage") Integer currentPage,
                                     @RequestParam("pageSize") Integer pageSize){
         Page<BlogInfo> IPage = new Page<>(currentPage,pageSize);
-        blogMapper.selectPage(IPage,new QueryWrapper<BlogInfo>().orderByDesc("is_top").orderByAsc("release_date"));
+        blogMapper.selectPage(IPage,new QueryWrapper<BlogInfo>().orderByDesc("is_top").orderByAsc("release_date").eq("published",true));
         for (BlogInfo blog: IPage.getRecords()){
             TypeInfo typeInfo = typeMapper.selectById(blog.getSId());
             blog.setName(typeInfo.getName());
@@ -173,6 +177,9 @@ public class BlogController {
         }
         return IPage;
     }
+    private void updateView(BlogInfo blogInfo){
+        String id = String.valueOf(blogInfo.getId());
+    }
     /**
      * @Description: 查找指定博客Id的内容
      * @param: id: 博客id
@@ -182,12 +189,19 @@ public class BlogController {
     */
     @CrossOrigin
     @GetMapping("/api/searchOneBlogInfo")
-    public BlogInfo OneBlogInfo(@RequestParam("id") Integer id){
-        BlogInfo blogInfo = blogMapper.selectById(id);
-        blogInfo.setViews(blogInfo.getViews() + 1);
-        blogMapper.updateById(blogInfo);
-        blogInfo.setName(typeMapper.selectById(blogInfo.getSId()).getName());
-        return blogInfo;
+    public BlogInfo OneBlogInfo(@RequestParam("id") String id){
+        if ( redisUtil.exitHashKey("views",id) ){
+            BlogInfo blogInfo = (BlogInfo) redisUtil.getHash("views", id);
+            blogInfo.setViews(blogInfo.getViews()+1);
+            redisUtil.setHash("views",id,blogInfo);
+            return blogInfo;
+        }
+        else {
+            BlogInfo blogInfo = blogMapper.selectById(id);
+            blogInfo.setName(typeMapper.selectById(blogInfo.getSId()).getName());
+            redisUtil.setHash("views", id, blogInfo);
+            return blogInfo;
+        }
     }
     /**
      * @Description: 查找文章,分类,标签的数量
@@ -198,7 +212,7 @@ public class BlogController {
     @CrossOrigin
     @GetMapping("/api/listCount")
     public Map<String,Integer> listCount(){
-        Integer pageCount = blogMapper.selectCount(null);
+        Integer pageCount = blogMapper.selectCount(new QueryWrapper<BlogInfo>().eq("published",true));
         Integer typeCount = typeMapper.selectCount(null);
         Integer tagCount = tagMapper.selectCount(null);
         Map<String,Integer> map = new HashMap<>();
@@ -222,7 +236,7 @@ public class BlogController {
                                    @RequestParam("currentPage") Integer currentPage,
                                    @RequestParam("pageSize") Integer pageSize){
         Page<BlogInfo> IPage = new Page<>(currentPage,pageSize);
-        blogMapper.selectPage(IPage,new QueryWrapper<BlogInfo>().orderByDesc("is_top").orderByAsc("release_date").eq("s_id",id));
+        blogMapper.selectPage(IPage,new QueryWrapper<BlogInfo>().orderByDesc("is_top").orderByAsc("release_date").eq("s_id",id).eq("published",true));
         for (BlogInfo blog: IPage.getRecords()){
             TypeInfo typeInfo = typeMapper.selectById(blog.getSId());
             blog.setName(typeInfo.getName());
@@ -259,17 +273,19 @@ public class BlogController {
         }
         List<BlogInfo> blogInfos = new ArrayList<>();
         for ( TagBlogInfo tagBlogInfo: tagBlogInfos){
-            BlogInfo blog = blogMapper.selectOne(new QueryWrapper<BlogInfo>().eq("id", tagBlogInfo.getBId()));
-            TypeInfo typeInfo = typeMapper.selectById(blog.getSId());
-            blog.setName(typeInfo.getName());
-            List<TagBlogInfo> tagBlogInfos1 = tagBlogMapper.selectList(new QueryWrapper<TagBlogInfo>().eq("b_id", blog.getId()));
-            List<TagInfo> tags = new ArrayList<>();
-            for (TagBlogInfo tagBlogInfo1: tagBlogInfos1){
-                TagInfo tagInfo = tagMapper.selectById(tagBlogInfo1.getTId());
-                tags.add(tagInfo);
+            BlogInfo blog = blogMapper.selectOne(new QueryWrapper<BlogInfo>().eq("id", tagBlogInfo.getBId()).eq("published",true));
+            if ( blog != null) {
+                TypeInfo typeInfo = typeMapper.selectById(blog.getSId());
+                blog.setName(typeInfo.getName());
+                List<TagBlogInfo> tagBlogInfos1 = tagBlogMapper.selectList(new QueryWrapper<TagBlogInfo>().eq("b_id", blog.getId()));
+                List<TagInfo> tags = new ArrayList<>();
+                for (TagBlogInfo tagBlogInfo1 : tagBlogInfos1) {
+                    TagInfo tagInfo = tagMapper.selectById(tagBlogInfo1.getTId());
+                    tags.add(tagInfo);
+                }
+                blog.setTagsName(tags);
+                blogInfos.add(blog);
             }
-            blog.setTagsName(tags);
-            blogInfos.add(blog);
         }
         if ( pageSize*currentPage > tagBlogInfos.size()){
             List<BlogInfo> blogInfos1 = blogInfos.subList((currentPage - 1) * pageSize, tagBlogInfos.size() );
@@ -297,5 +313,15 @@ public class BlogController {
             map.put(year,blogInfos);
         }
         return map;
+    }
+    /**
+     * @Description: 刷新过快返回的信息
+     * @Return: java.lang.String
+     * @author: Heaven
+     * @date: 2021/8/10 19:22
+    */
+    @GetMapping("/flushQuickError")
+    public String flushMax(){
+        return "quick";
     }
 }

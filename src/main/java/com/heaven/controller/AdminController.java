@@ -41,12 +41,27 @@ public class AdminController {
     @CrossOrigin
     @PostMapping("/api/admin/modify")
     public Boolean Modify(@RequestBody AdminInfo adminInfo){
-        System.out.println(adminInfo);
         int count = adminMapper.update(adminInfo,
                 new QueryWrapper<AdminInfo>().eq("user", adminInfo.getUser()));
         if ( count == 1){
             return true;
         }else
             return false;
+    }
+    /**
+     * @Description: 判断是否登录过
+     * @param: adminInfo: 验证信息
+     * @Return: java.lang.Boolean
+     * @author: Heaven
+     * @date: 2021/8/16 8:42
+    */
+    @CrossOrigin
+    @PostMapping("/api/isAdmin")
+    public Boolean isAdmin(@RequestBody AdminInfo adminInfo){
+        AdminInfo adminInfo1 = adminMapper.selectOne(new QueryWrapper<AdminInfo>().eq("password", adminInfo.getPassword()));
+        if ( adminInfo1 != null){
+            return true;
+        }
+        else return false;
     }
 }

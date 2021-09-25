@@ -12,6 +12,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "releaseDate", LocalDateTime.class, LocalDateTime.now());
         this.strictInsertFill(metaObject, "updateDate", LocalDateTime.class, LocalDateTime.now());
+        this.strictInsertFill(metaObject,"cdate",LocalDateTime.class,LocalDateTime.now());
     }
 
     @Override
