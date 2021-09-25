@@ -1,9 +1,9 @@
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/blog?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
-    username:
-    password:
+    username: root
+    password: match.123
   redis:
     port: 6379
-    host:
-    password:
+    host: 119.23.216.3
+    password: match.123
